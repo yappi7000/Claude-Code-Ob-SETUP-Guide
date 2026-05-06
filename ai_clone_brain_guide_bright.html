@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIクローン脳の作り方</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Barlow+Condensed:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red:        #e8002d;
+    --red-lt:     #fff0f3;
+    --red-mid:    #ff4d6a;
+    --orange:     #ff6b00;
+    --orange-lt:  #fff4ec;
+    --yellow:     #ffd600;
+    --yellow-lt:  #fffbe6;
+    --blue:       #0066cc;
+    --blue-lt:    #e8f2ff;
+    --green:      #00a550;
+    --green-lt:   #e6f9f0;
+    --purple:     #7c3aed;
+    --purple-lt:  #f3f0ff;
+    --text:       #1a1a2e;
+    --muted:      #555;
+    --bg:         #f8f9ff;
+    --card-bg:    #ffffff;
+    --border:     #e8e8f0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.75;
+  }
+  .wrapper { max-width: 780px; margin: 0 auto; padding: 32px 20px 80px; }
+
+  /* ═══ HERO ═══ */
+  .hero {
+    background: linear-gradient(135deg, #e8002d 0%, #ff4d00 50%, #ffd600 100%);
+    border-radius: 20px;
+    padding: 0;
+    margin-bottom: 36px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 12px 40px rgba(232,0,45,.25);
+  }
+  .hero-track {
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 6px;
+    background: repeating-linear-gradient(90deg, #fff 0px, #fff 30px, transparent 30px, transparent 60px);
+    opacity: .35;
+  }
+  .hero-inner {
+    padding: 44px 44px 36px;
+    position: relative;
+    text-align: center;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,.22);
+    border: 1px solid rgba(255,255,255,.4);
+    color: #fff;
+    font-size: 11px; font-weight: 700;
+    padding: 5px 16px; border-radius: 30px;
+    letter-spacing: 1.5px;
+    margin-bottom: 18px;
+    backdrop-filter: blur(4px);
+  }
+  .hero-f1 {
+    font-size: 80px; line-height: 1;
+    margin-bottom: 14px;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,.2));
+    animation: floatCar 3s ease-in-out infinite;
+  }
+  @keyframes floatCar {
+    0%,100% { transform: translateY(0px) rotate(-2deg); }
+    50%      { transform: translateY(-8px) rotate(2deg); }
+  }
+  .hero-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 42px; font-weight: 900;
+    color: #fff;
+    line-height: 1.15;
+    margin-bottom: 10px;
+    text-shadow: 0 2px 12px rgba(0,0,0,.2);
+    letter-spacing: -0.5px;
+  }
+  .hero-title span { color: #ffd600; }
+  .hero-sub {
+    font-size: 14px; color: rgba(255,255,255,.88);
+    max-width: 480px; margin: 0 auto 8px;
+  }
+  .hero-note {
+    font-size: 12px; color: rgba(255,255,255,.65);
+    margin-top: 6px;
+  }
+  .hero-speed-strip {
+    background: rgba(0,0,0,.18);
+    padding: 10px 44px;
+    display: flex; justify-content: center; gap: 32px;
+    font-size: 12px; color: rgba(255,255,255,.85); font-weight: 700;
+  }
+  .hero-speed-strip span { display: flex; align-items: center; gap: 5px; }
+
+  /* ═══ SECTION HEAD ═══ */
+  .sec-head { display: flex; align-items: center; gap: 10px; margin: 36px 0 14px; }
+  .sec-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px; flex-shrink: 0;
+  }
+  .sec-icon.red    { background: var(--red); }
+  .sec-icon.orange { background: var(--orange); }
+  .sec-icon.blue   { background: var(--blue); }
+  .sec-icon.green  { background: var(--green); }
+  .sec-icon.purple { background: var(--purple); }
+  .sec-icon.yellow { background: var(--yellow); }
+  .sec-title {
+    font-size: 18px; font-weight: 700; color: var(--text);
+  }
+
+  /* ═══ CARD ═══ */
+  .card {
+    background: var(--card-bg);
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 14px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.04);
+    transition: box-shadow .2s;
+  }
+  .card:hover { box-shadow: 0 6px 24px rgba(0,0,0,.09); }
+  .card-head {
+    padding: 13px 20px;
+    border-bottom: 1.5px solid var(--border);
+    font-size: 14px; font-weight: 700;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .card-head.red    { background: var(--red-lt);    color: var(--red); }
+  .card-head.orange { background: var(--orange-lt); color: var(--orange); }
+  .card-head.blue   { background: var(--blue-lt);   color: var(--blue); }
+  .card-head.green  { background: var(--green-lt);  color: var(--green); }
+  .card-head.purple { background: var(--purple-lt); color: var(--purple); }
+  .card-head.yellow { background: var(--yellow-lt); color: #8a6000; }
+  .card-body {
+    padding: 16px 20px;
+    font-size: 13.5px; color: var(--muted); line-height: 1.9;
+  }
+  .card-body strong { color: var(--text); font-weight: 700; }
+  .card-body .em   { color: var(--red);    font-weight: 700; }
+  .card-body .em-b { color: var(--blue);   font-weight: 700; }
+  .card-body .em-g { color: var(--green);  font-weight: 700; }
+  .card-body .em-o { color: var(--orange); font-weight: 700; }
+
+  /* ═══ ALERT BOX ═══ */
+  .alert {
+    border-radius: 12px; padding: 14px 18px;
+    font-size: 13px; margin: 14px 0;
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .alert.red    { background: var(--red-lt);    border-left: 4px solid var(--red);    color: #8a001a; }
+  .alert.orange { background: var(--orange-lt); border-left: 4px solid var(--orange); color: #7a3000; }
+  .alert.blue   { background: var(--blue-lt);   border-left: 4px solid var(--blue);   color: #003d7a; }
+  .alert.green  { background: var(--green-lt);  border-left: 4px solid var(--green);  color: #005c2e; }
+  .alert-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .alert strong { font-weight: 700; display: block; margin-bottom: 3px; }
+
+  /* ═══ PAIN GRID ═══ */
+  .pain-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 12px; margin-bottom: 14px;
+  }
+  .pain-card {
+    background: var(--card-bg); border: 1.5px solid var(--border);
+    border-radius: 14px; padding: 18px 16px;
+    display: flex; flex-direction: column; gap: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.04);
+  }
+  .pain-icon { font-size: 28px; }
+  .pain-title { font-size: 13px; font-weight: 700; color: var(--text); }
+  .pain-desc  { font-size: 12.5px; color: var(--muted); line-height: 1.7; }
+
+  /* ═══ VS COMPARE ═══ */
+  .vs-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 14px; margin-bottom: 14px;
+  }
+  .vs-col {
+    border-radius: 14px; padding: 18px 16px;
+    border: 1.5px solid var(--border);
+    background: var(--card-bg);
+  }
+  .vs-col.bad  { border-color: #ffc0c8; background: #fff5f7; }
+  .vs-col.good { border-color: #a8e6c8; background: #f0fbf5; }
+  .vs-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 1px;
+    margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+  }
+  .vs-label.bad  { color: var(--red); }
+  .vs-label.good { color: var(--green); }
+  .vs-item {
+    font-size: 13px; color: var(--muted); padding: 5px 0;
+    border-bottom: 1px solid rgba(0,0,0,.06);
+    display: flex; align-items: center; gap: 7px;
+  }
+  .vs-item:last-child { border-bottom: none; }
+
+  /* ═══ 3-LAYER STRUCT ═══ */
+  .layer-grid {
+    display: grid; grid-template-columns: repeat(3,1fr);
+    gap: 12px; margin-bottom: 14px;
+  }
+  .layer-card {
+    background: var(--card-bg); border: 1.5px solid var(--border);
+    border-radius: 14px; padding: 20px 14px; text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,.04);
+    transition: transform .2s;
+  }
+  .layer-card:hover { transform: translateY(-3px); }
+  .layer-icon { font-size: 30px; margin-bottom: 10px; }
+  .layer-name { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .layer-desc { font-size: 12px; color: var(--muted); line-height: 1.65; }
+
+  /* ═══ STEP ═══ */
+  .step {
+    background: var(--card-bg); border: 1.5px solid var(--border);
+    border-radius: 16px; margin-bottom: 14px; overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,.04);
+  }
+  .step-head {
+    display: flex; align-items: center; gap: 14px;
+    padding: 16px 20px; border-bottom: 1.5px solid var(--border);
+  }
+  .step-num {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--red), var(--orange));
+    color: #fff; font-family: 'Barlow Condensed', sans-serif;
+    font-size: 20px; font-weight: 900;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .step-title {
+    flex: 1;
+    font-size: 15px; font-weight: 700; color: var(--text);
+  }
+  .step-time {
+    font-size: 11px; background: var(--yellow-lt);
+    color: #8a6000; font-weight: 700; padding: 3px 10px;
+    border-radius: 20px; border: 1px solid #f5d060;
+    white-space: nowrap;
+  }
+  .step-body { padding: 16px 20px; font-size: 13.5px; color: var(--muted); line-height: 1.9; }
+  .step-body strong { color: var(--text); font-weight: 700; }
+  .step-body code {
+    background: #f0f4ff; color: #2244aa;
+    border: 1px solid #d0daf8;
+    padding: 10px 16px; border-radius: 10px;
+    display: block; font-size: 13px; margin: 10px 0;
+    font-family: 'Courier New', monospace;
+    overflow-x: auto;
+  }
+
+  /* ═══ OPS GRID ═══ */
+  .ops-grid {
+    display: grid; grid-template-columns: repeat(3,1fr);
+    gap: 12px; margin-bottom: 14px;
+  }
+  .ops-card {
+    background: var(--card-bg); border: 1.5px solid var(--border);
+    border-radius: 14px; padding: 20px 14px; text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,.04);
+  }
+  .ops-icon  { font-size: 28px; margin-bottom: 8px; }
+  .ops-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .ops-desc  { font-size: 12px; color: var(--muted); line-height: 1.65; }
+
+  /* ═══ STATS ROW ═══ */
+  .stats-row {
+    display: grid; grid-template-columns: repeat(3,1fr);
+    gap: 12px; margin-bottom: 14px;
+  }
+  .stat-card {
+    background: linear-gradient(135deg, var(--red), #ff4d6a);
+    border-radius: 14px; padding: 20px 14px; text-align: center;
+    box-shadow: 0 4px 16px rgba(232,0,45,.2);
+  }
+  .stat-card:nth-child(2) { background: linear-gradient(135deg, var(--orange), #ff9500); box-shadow: 0 4px 16px rgba(255,107,0,.2); }
+  .stat-card:nth-child(3) { background: linear-gradient(135deg, var(--blue), #0099ff); box-shadow: 0 4px 16px rgba(0,102,204,.2); }
+  .stat-num  { font-family: 'Barlow Condensed', sans-serif; font-size: 42px; font-weight: 900; color: #fff; line-height: 1; }
+  .stat-unit { font-size: 11px; color: rgba(255,255,255,.75); font-weight: 700; margin-top: 4px; }
+  .stat-label{ font-size: 12px; color: rgba(255,255,255,.85); margin-top: 6px; }
+
+  /* ═══ CHECKLIST ═══ */
+  .checklist { list-style: none; margin-bottom: 14px; }
+  .checklist li {
+    background: var(--card-bg); border: 1.5px solid var(--border);
+    border-radius: 12px; padding: 13px 18px;
+    margin-bottom: 8px; font-size: 13.5px; color: var(--muted);
+    display: flex; align-items: flex-start; gap: 10px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.04);
+    line-height: 1.7;
+  }
+  .checklist li .ck { color: var(--green); font-size: 17px; flex-shrink: 0; margin-top: 1px; }
+  .checklist li .no { color: var(--red);   font-size: 17px; flex-shrink: 0; margin-top: 1px; }
+  .checklist li strong { color: var(--text); }
+
+  /* ═══ ROADMAP ═══ */
+  .roadmap { margin-bottom: 14px; }
+  .roadmap-item {
+    display: flex; gap: 16px; margin-bottom: 0;
+    position: relative;
+  }
+  .roadmap-item::before {
+    content: ''; position: absolute; left: 19px; top: 44px; bottom: -14px;
+    width: 2px; background: linear-gradient(to bottom, var(--red), var(--orange), var(--blue));
+  }
+  .roadmap-item:last-child::before { display: none; }
+  .roadmap-dot {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--red), var(--orange));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+    box-shadow: 0 3px 10px rgba(232,0,45,.25);
+    position: relative; z-index: 1;
+  }
+  .roadmap-item:nth-child(2) .roadmap-dot { background: linear-gradient(135deg, var(--orange), var(--yellow)); box-shadow: 0 3px 10px rgba(255,107,0,.25); }
+  .roadmap-item:nth-child(3) .roadmap-dot { background: linear-gradient(135deg, var(--blue), #0099ff); box-shadow: 0 3px 10px rgba(0,102,204,.25); }
+  .roadmap-content {
+    background: var(--card-bg); border: 1.5px solid var(--border);
+    border-radius: 14px; padding: 16px 18px; flex: 1; margin-bottom: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.04);
+  }
+  .roadmap-phase { font-size: 11px; font-weight: 700; color: var(--red); letter-spacing: 1px; margin-bottom: 4px; }
+  .roadmap-item:nth-child(2) .roadmap-phase { color: var(--orange); }
+  .roadmap-item:nth-child(3) .roadmap-phase { color: var(--blue); }
+  .roadmap-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .roadmap-desc  { font-size: 13px; color: var(--muted); line-height: 1.7; }
+
+  /* ═══ FINISH ═══ */
+  .finish {
+    background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 50%, #16213e 100%);
+    border-radius: 20px; padding: 40px;
+    text-align: center; margin-top: 36px;
+    position: relative; overflow: hidden;
+    box-shadow: 0 12px 40px rgba(0,0,0,.25);
+  }
+  .finish::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+    background: repeating-linear-gradient(90deg, var(--red) 0px, var(--red) 20px, #fff 20px, #fff 40px, var(--red) 40px);
+  }
+  .finish-flag { font-size: 60px; margin-bottom: 16px;
+    animation: wave 2s ease-in-out infinite; display: inline-block; }
+  @keyframes wave {
+    0%,100% { transform: rotate(-10deg); }
+    50%      { transform: rotate(10deg); }
+  }
+  .finish-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 32px; font-weight: 900; color: #fff;
+    margin-bottom: 14px;
+    line-height: 1.2;
+  }
+  .finish-title span { color: var(--yellow); }
+  .finish-desc { font-size: 14px; color: rgba(255,255,255,.75); line-height: 1.85; max-width: 480px; margin: 0 auto 20px; }
+  .finish-cta {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--red), var(--orange));
+    color: #fff; font-weight: 700; font-size: 15px;
+    padding: 14px 36px; border-radius: 40px;
+    box-shadow: 0 6px 20px rgba(232,0,45,.4);
+    text-decoration: none;
+    letter-spacing: .5px;
+  }
+
+  /* ═══ DIVIDER ═══ */
+  .divider {
+    height: 1px; background: linear-gradient(to right, transparent, var(--border), transparent);
+    margin: 28px 0;
+  }
+
+  @media (max-width: 600px) {
+    .vs-grid, .pain-grid { grid-template-columns: 1fr; }
+    .layer-grid, .ops-grid, .stats-row { grid-template-columns: 1fr; }
+    .hero-title { font-size: 30px; }
+    .hero-inner { padding: 32px 24px 24px; }
+    .finish { padding: 28px 20px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-track"></div>
+    <div class="hero-inner">
+      <div class="hero-badge">🏎️ 完全初心者向け</div>
+      <div class="hero-f1">🏎️</div>
+      <h1 class="hero-title">
+        あなたの副業を<br>
+        <span>月30時間生み出す</span><br>
+        「AIクローン脳」の作り方
+      </h1>
+      <p class="hero-sub">Claude × Obsidianで、一度調べた情報が<br>永遠に積み上がり続ける「第二の脳」を構築する</p>
+      <p class="hero-note">今夜30分で土台完成</p>
+    </div>
+    <div class="hero-speed-strip">
+      <span>⏱ セットアップ30分</span>
+      <span>🏁 5ステップ</span>
+      <span>📈 月30時間の副業時間を捻出</span>
+    </div>
+  </div>
+
+  <!-- ピットウォールの話 -->
+  <div class="sec-head">
+    <div class="sec-icon red">🏎️</div>
+    <h2 class="sec-title">F1ピットウォールから学ぶ「データの力」</h2>
+  </div>
+
+  <div class="card">
+    <div class="card-head orange">🏁 ピットウォールのエンジニアはなぜ速いのか</div>
+    <div class="card-body">
+      F1チームのピットウォールを想像してほしい。レースエンジニアたちは、毎戦ただスタートを切るだけじゃない。<strong>過去の全レースデータ・今日の気温・路面温度・タイヤのデグラデーション・ライバルの戦略傾向</strong>——そのすべてを前のレースから積み上げ続けて、今日の1戦に臨んでいる。
+      <br><br>
+      「前回のモナコでは第2スティントのタイヤ選択が裏目に出た。今日の気温はあのときより8度高い。ならソフトは捨てて、ミディアムからスタートすべきだ」
+      <br><br>
+      この「判断の速さ」は才能じゃない。<span class="em">データが積み上がっているから</span>だ。
+    </div>
+  </div>
+
+  <div class="alert red">
+    <div class="alert-icon">⚠️</div>
+    <div>
+      <strong>ほとんどの人のAIの使い方</strong>
+      ChatGPTやClaudeを開くたびに自己紹介から始めて、昨日3時間かけて調べた内容を今日もゼロから説明し直す。<strong>毎レース、テレメトリーデータを全消去してスタートしているようなもの</strong>だ。
+    </div>
+  </div>
+
+  <div class="alert blue">
+    <div class="alert-icon">💡</div>
+    <div>
+      海外のAI活用コンサル Adam Sandler氏はこれを「<strong>ほとんどの人はAIを記憶喪失の派遣社員のように使っている</strong>」と表現した。これはAIの性能不足じゃない。<span class="em-b">「記憶の設計」をしていないせい</span>だ。
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- こんな経験ありませんか -->
+  <div class="sec-head">
+    <div class="sec-icon orange">😩</div>
+    <h2 class="sec-title">こんな経験、ありませんか？</h2>
+  </div>
+
+  <div class="pain-grid">
+    <div class="pain-card">
+      <div class="pain-icon">🔄</div>
+      <div class="pain-title">毎回ゼロから自己紹介</div>
+      <div class="pain-desc">「私はこういう仕事をしていて…」毎回同じ説明から始まる。テレメトリー全消去でレース開始と同じ。</div>
+    </div>
+    <div class="pain-card">
+      <div class="pain-icon">📚</div>
+      <div class="pain-title">Notionを3週間で挫折</div>
+      <div class="pain-desc">最初の2週間は楽しい→3週間目から更新が止まる→1ヶ月後にそっと閉じる。このループ、心当たりは？</div>
+    </div>
+    <div class="pain-card">
+      <div class="pain-icon">🔍</div>
+      <div class="pain-title">「あれどこだっけ？」を毎日繰り返す</div>
+      <div class="pain-desc">先週調べた資料が見つからない。1日5回これをやると、月30時間以上消えていく。</div>
+    </div>
+    <div class="pain-card">
+      <div class="pain-icon">✏️</div>
+      <div class="pain-title">白紙の画面で手が止まる</div>
+      <div class="pain-desc">noteやXで発信するとき、一番時間が消えるのは書き始め。ネタも素材もゼロからスタートになる。</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- なぜ続かなかったのか -->
+  <div class="sec-head">
+    <div class="sec-icon blue">💡</div>
+    <h2 class="sec-title">なぜ今まで続かなかったのか</h2>
+  </div>
+
+  <div class="vs-grid">
+    <div class="vs-col bad">
+      <div class="vs-label bad">❌ 今までのやり方</div>
+      <div class="vs-item">🔴 タグ整理は人間がやる</div>
+      <div class="vs-item">🔴 リンク張り直しも人間</div>
+      <div class="vs-item">🔴 古い情報の更新も人間</div>
+      <div class="vs-item">🔴 忙しいと後回し→崩壊</div>
+    </div>
+    <div class="vs-col good">
+      <div class="vs-label good">✅ AIクローン脳のやり方</div>
+      <div class="vs-item">🟢 整理はAIが自動でやる</div>
+      <div class="vs-item">🟢 リンクもAIが張る</div>
+      <div class="vs-item">🟢 更新もAIが自動で</div>
+      <div class="vs-item">🟢 人間はただ投げ込むだけ</div>
+    </div>
+  </div>
+
+  <div class="alert green">
+    <div class="alert-icon">🎯</div>
+    <div>
+      <strong>核心：「メンテを人間がやらない」こと</strong>
+      NotionやEvernoteが死ぬのはツールの問題じゃない。「管理を人間がやる前提」だったことが原因。AIにメンテを肩代わりさせれば、このループは永久に終わる。
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 3層構造 -->
+  <div class="sec-head">
+    <div class="sec-icon green">🏗️</div>
+    <h2 class="sec-title">仕組みはシンプルな3層構造</h2>
+  </div>
+
+  <div class="layer-grid">
+    <div class="layer-card">
+      <div class="layer-icon">📥</div>
+      <div class="layer-name">raw/ フォルダ</div>
+      <div class="layer-desc">記事・PDF・メモを何でも放り込む場所。AIは読むだけ。絶対に書き換えない。</div>
+    </div>
+    <div class="layer-card">
+      <div class="layer-icon">📖</div>
+      <div class="layer-name">wiki/ フォルダ</div>
+      <div class="layer-desc">AIが要約・概念ページを自動生成。新情報が来るたびに自動更新される。</div>
+    </div>
+    <div class="layer-card">
+      <div class="layer-icon">⚙️</div>
+      <div class="layer-name">CLAUDE.md</div>
+      <div class="layer-desc">AIへの指示書。「こう運用して」というルールを一度書けば毎回自動で読み込まれる。</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 5ステップ -->
+  <div class="sec-head">
+    <div class="sec-icon red">🚀</div>
+    <h2 class="sec-title">今夜30分で土台を作る5ステップ</h2>
+  </div>
+
+  <div class="step">
+    <div class="step-head">
+      <div class="step-num">1</div>
+      <div class="step-title">📱 Obsidianをインストール</div>
+      <div class="step-time">⏱ 約5分</div>
+    </div>
+    <div class="step-body">
+      obsidian.md にアクセスして無料でダウンロード。起動したら「Create new vault」を選び、好きな名前（「副業ナレッジ」「My Brain」何でもOK）でフォルダを作成。
+      <div class="alert blue" style="margin-top:10px;">
+        <div class="alert-icon">💬</div>
+        <div>保存場所はデスクトップでもドキュメントでも大丈夫。後から変えられます。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-head">
+      <div class="step-num">2</div>
+      <div class="step-title">📁 3つのフォルダを作る</div>
+      <div class="step-time">⏱ 約3分</div>
+    </div>
+    <div class="step-body">
+      「raw」「wiki」「outputs」の3つだけ作ればOK。完璧な分類を考え込まないで。分類は後でAIに任せます。
+      <div class="alert orange" style="margin-top:10px;">
+        <div class="alert-icon">⚠️</div>
+        <div>「完璧なフォルダ構造」を考え始めた瞬間に時間が溶けます。3フォルダで即スタートが鉄則。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-head">
+      <div class="step-num">3</div>
+      <div class="step-title">💻 Claude Codeをインストール</div>
+      <div class="step-time">⏱ 約10分</div>
+    </div>
+    <div class="step-body">
+      ① Node.js を公式サイトからインストール（LTS版を選ぶだけ）<br>
+      ② ターミナルを開いて以下をコピペ：
+      <code>npm install -g @anthropic-ai/claude-code</code>
+      ③ Vaultフォルダに移動して <strong>claude</strong> と打つだけ。
+      <div class="alert blue" style="margin-top:10px;">
+        <div class="alert-icon">💬</div>
+        <div>ターミナル未経験でも全く問題なし！Claudeに「Claude Codeのインストール方法を1行ずつ教えて」と聞けば手取り足取り解説してくれます。<br><br>💳 Claude Proプラン（月$20）が必要ですが、最初の1ヶ月で確実に回収できます。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-head">
+      <div class="step-num">4</div>
+      <div class="step-title">📝 設計図を2枚書く</div>
+      <div class="step-time">⏱ 約7分</div>
+    </div>
+    <div class="step-body">
+      Vaultのトップに「CLAUDE.md」と「Memory.md」の2ファイルを作成。CLAUDE.mdにはAIへのルールを書きます：
+      <code>- /raw/ → 元素材。読み取り専用。書き換えない<br>- /wiki/ → AIが管理する知識ベース<br>- 新しい素材を処理したら要約をwiki/に作り<br>　関連する既存ページも更新する<br>- 質問にはwikiの内容を引用しながら答える</code>
+      <div class="alert green" style="margin-top:10px;">
+        <div class="alert-icon">✏️</div>
+        <div>Memory.mdには「仕事の内容・副業の目標・興味分野」を書こう。Claudeと20分雑談してその内容をコピペするだけでも十分機能します。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-head">
+      <div class="step-num">5</div>
+      <div class="step-title">🎉 最初の記事を放り込んでみる</div>
+      <div class="step-time">⏱ 約5分</div>
+    </div>
+    <div class="step-body">
+      「最近読んで良かった」記事を1本、raw/フォルダに保存。ファイル名は何でもOK。そしてこう打つだけ：
+      <code>raw/に新しい記事を入れたから、<br>要約をwiki/に作って、<br>関連する概念ページも作って</code>
+      <div class="alert green" style="margin-top:10px;">
+        <div class="alert-icon">🌟</div>
+        <div>これだけで記事1本から<strong>8〜15ページ分のWikiが自動生成</strong>されます！Obsidianのグラフビュー（Ctrl+G）を開くと、ノードが線でつながっていく様子が見えます。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 日常の3操作 -->
+  <div class="sec-head">
+    <div class="sec-icon purple">🔄</div>
+    <h2 class="sec-title">日常で回す3つの操作だけ</h2>
+  </div>
+
+  <div class="ops-grid">
+    <div class="ops-card">
+      <div class="ops-icon">📥</div>
+      <div class="ops-title">① Ingest（取り込み）</div>
+      <div class="ops-desc">記事・メモをraw/に放り込んで「処理して」と頼むだけ。8〜15ページのWikiが自動生成される。</div>
+    </div>
+    <div class="ops-card">
+      <div class="ops-icon">💬</div>
+      <div class="ops-title">② Query（質問）</div>
+      <div class="ops-desc">「あの件でどんな情報があった？」と聞くだけ。過去の情報を引用付きで即答してくれる。</div>
+    </div>
+    <div class="ops-card">
+      <div class="ops-icon">🔍</div>
+      <div class="ops-title">③ Lint（健康チェック）</div>
+      <div class="ops-desc">月1回「矛盾・古い情報を見つけて」と頼むだけ。AIが数分でスキャンして修正案を出す。</div>
+    </div>
+  </div>
+
+  <div class="alert orange">
+    <div class="alert-icon">⭐</div>
+    <div>
+      <strong>最初は「Ingest」だけでOK！</strong>
+      週2〜3本放り込む習慣だけつければ、1ヶ月後には10〜15本分の構造化された知識が手元に残ります。「全部一気にやろう」と思った瞬間、Notion挫折と同じ道が始まります。
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 統計 -->
+  <div class="sec-head">
+    <div class="sec-icon orange">⏰</div>
+    <h2 class="sec-title">副業時間を月30時間捻出するには</h2>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-num">5</div>
+      <div class="stat-unit">回 / 日</div>
+      <div class="stat-label">「あれどこだっけ？」<br>検索回数</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">20</div>
+      <div class="stat-unit">分 / 回</div>
+      <div class="stat-label">1回あたりの<br>節約時間</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">30</div>
+      <div class="stat-unit">時間 / 月</div>
+      <div class="stat-label">丸ごと副業に<br>振れる時間</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head yellow">💰 副業ネタが「複利」で資産化する</div>
+    <div class="card-body">
+      F1エンジニアが毎戦データを積み上げるように、読んだ記事・聞いたポッドキャストをraw/に入れ続けるだけでネタ帳が勝手に育つ。「副業のターゲット向けに、過去の情報から訴求軸を3つ提案して」と聞くだけで、蓄積をフルに使った提案がゼロ秒で出てくる。
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head blue">✏️ コンテンツ制作の「白紙の恐怖」がなくなる</div>
+    <div class="card-body">
+      「Memory.mdの自分のキャラと、過去の記事をベースにX投稿の構成案を5本出して」で、自分らしい切り口が即座に揃う。書き始めるまでの摩擦がほぼゼロになります。
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- チェックリスト -->
+  <div class="sec-head">
+    <div class="sec-icon green">✅</div>
+    <h2 class="sec-title">挫折しないための5つのチェック</h2>
+  </div>
+
+  <ul class="checklist">
+    <li><span class="no">🚫</span><div><strong>完璧なフォルダ構造を設計しない</strong> — 3フォルダで始める。考え込んだ瞬間に負け。</div></li>
+    <li><span class="ck">📄</span><div><strong>最初の3ページは質が低くていい</strong> — 「本物の情報」であることだけが大事。</div></li>
+    <li><span class="no">🔌</span><div><strong>プラグインを増やしすぎない</strong> — 標準機能 + Web Clipperで十分。沼にハマらない。</div></li>
+    <li><span class="ck">👤</span><div><strong>Memory.mdに自分の情報を書く</strong> — ここを書くか書かないかで、AIの回答精度が劇的に変わる。最重要。</div></li>
+    <li><span class="ck">🌐</span><div><strong>Ingest後にグラフビューを開く</strong> — 知識が育つのが視覚化されると、続けたくなる。モチベの源泉。</div></li>
+  </ul>
+
+  <div class="divider"></div>
+
+  <!-- ロードマップ -->
+  <div class="sec-head">
+    <div class="sec-icon blue">📅</div>
+    <h2 class="sec-title">「複利」を体感するロードマップ</h2>
+  </div>
+
+  <div class="roadmap">
+    <div class="roadmap-item">
+      <div class="roadmap-dot">🌱</div>
+      <div class="roadmap-content">
+        <div class="roadmap-phase">1週目</div>
+        <div class="roadmap-title">「育っていく感覚」をつかむ</div>
+        <div class="roadmap-desc">「この記事入れたから処理して」と言うだけで、自分専用のWikiが育っていく感覚を体験。まずここだけ目指す。</div>
+      </div>
+    </div>
+    <div class="roadmap-item">
+      <div class="roadmap-dot">⚡</div>
+      <div class="roadmap-content">
+        <div class="roadmap-phase">1ヶ月後</div>
+        <div class="roadmap-title">「これは戻れない」と確信する瞬間</div>
+        <div class="roadmap-desc">「先週調べたあれ」にAIが即答する。F1エンジニアが前戦データを一発で引き出す感覚を体験する。</div>
+      </div>
+    </div>
+    <div class="roadmap-item">
+      <div class="roadmap-dot">🚀</div>
+      <div class="roadmap-content">
+        <div class="roadmap-phase">2ヶ月後</div>
+        <div class="roadmap-title">自分が見落としていた視点をAIが指摘</div>
+        <div class="roadmap-desc">知識の蓄積が一定量を超えると、AIが「この2つの情報、矛盾してますよ」と言い始める。もう普通のAIチャットには戻れない。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FINISH -->
+  <div class="finish">
+    <div class="finish-flag">🏁</div>
+    <h2 class="finish-title">今夜の30分が、<br><span>半年後の数百時間</span>を生み出す</h2>
+    <p class="finish-desc">
+      F1チームは1レースごとにデータを積み上げて、次の戦略を磨いていく。<br>
+      あなたの副業も同じだ。<br><br>
+      副業に必要なのは「気合」じゃなくて「時間」と「ネタ」。<br>
+      AIクローン脳は、その両方を同時に解決する。<br><br>
+      今週末を待たず、<strong style="color:#ffd600;">今夜のStep 1</strong>から始めてみてください。
+    </p>
+    <div class="finish-cta">🏎️ 今夜スタートする →</div>
+  </div>
+
+</div>
+</body>
+</html>
